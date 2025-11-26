@@ -2,8 +2,11 @@ package com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.config.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,6 +28,9 @@ fun InterfaceDropdown(
     onMimicQuic: () -> Unit,
     onMimicDns: () -> Unit,
     onMimicSip: () -> Unit,
+    onMimicQuicSettings: () -> Unit,
+    onMimicDnsSettings: () -> Unit,
+    onMimicSipSettings: () -> Unit,
 ) {
     Column {
         IconButton(onClick = { onExpandedChange(true) }) {
@@ -75,12 +81,27 @@ fun InterfaceDropdown(
                     onExpandedChange(false)
                 },
             )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.mimic_quic)) },
                 onClick = {
                     onMimicQuic()
                     onExpandedChange(false)
                 },
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            onMimicQuicSettings()
+                            onExpandedChange(false)
+                        }
+                    ) {
+                        Icon(
+                            Icons.Rounded.Settings,
+                            contentDescription = stringResource(R.string.settings),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             )
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.mimic_dns)) },
@@ -88,6 +109,20 @@ fun InterfaceDropdown(
                     onMimicDns()
                     onExpandedChange(false)
                 },
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            onMimicDnsSettings()
+                            onExpandedChange(false)
+                        }
+                    ) {
+                        Icon(
+                            Icons.Rounded.Settings,
+                            contentDescription = stringResource(R.string.settings),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             )
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.mimic_sip)) },
@@ -95,6 +130,20 @@ fun InterfaceDropdown(
                     onMimicSip()
                     onExpandedChange(false)
                 },
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            onMimicSipSettings()
+                            onExpandedChange(false)
+                        }
+                    ) {
+                        Icon(
+                            Icons.Rounded.Settings,
+                            contentDescription = stringResource(R.string.settings),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             )
         }
     }

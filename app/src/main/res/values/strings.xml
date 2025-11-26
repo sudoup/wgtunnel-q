@@ -436,4 +436,20 @@
     <string name="donation_prompt_prefix">Thanks for using WG Tunnel! If you are able, please consider</string>
     <string name="donation_prompt_link">supporting the project</string>
     <string name="donation_prompt_suffix">to keep it free and improving.</string>
+    <string name="mimic_dns_settings">DNS Mimic Settings</string>
+    <string name="mimic_quic_settings">QUIC Mimic Settings</string>
+    <string name="mimic_sip_settings">SIP Mimic Settings</string>
+    <string name="mimic_domain">Domain</string>
+    <string name="mimic_quic_version">QUIC Version</string>
+    <string name="mimic_sip_from_user">From User</string>
+    <string name="mimic_sip_to_user">To User</string>
+    <string name="mimic_sip_from_domain">From Domain</string>
+    <string name="mimic_sip_to_domain">To Domain</string>
+    <string name="mimic_itime_settings">Itime Settings</string>
+    <string name="mimic_itime_min">Itime Min</string>
+    <string name="mimic_itime_max">Itime Max</string>
+    <string name="mimic_regenerate_interval">Regenerate Interval (seconds)</string>
+    <string name="mimic_regenerate_hint">0 = disabled, values generate new packets periodically</string>
+    <string name="mimic_generate">Generate</string>
+    <string name="mimic_apply">Apply</string>
 </resources>
