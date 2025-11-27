@@ -2,14 +2,19 @@ package com.zaneschepke.wireguardautotunnel.ui.state
 
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.random.Random
 
+@Serializable
 enum class MimicType {
     DNS,
     QUIC,
     SIP
 }
 
+@Serializable
 data class MimicSettings(
     val type: MimicType = MimicType.DNS,
     val domain: String = "example.com",
@@ -20,17 +25,28 @@ data class MimicSettings(
     val quicVersion: String = "1",
     val itimeMin: Int = 120,
     val itimeMax: Int = 180,
-    val regenerateIntervalSeconds: Int = 0,
+    val regenerateIntervalSeconds: Int = 20,
 ) {
+    fun toJson(): String = Json.encodeToString<MimicSettings>(this)
+
     companion object {
         const val ITIME_MIN_ALLOWED = 100
         const val ITIME_MAX_ALLOWED = 600
-        const val REGENERATE_MIN = 0
-        const val REGENERATE_MAX = 3600
+        const val REGENERATE_MIN = 20
+        const val REGENERATE_MAX = 60
+        const val DEFAULT_REGENERATE_INTERVAL = 20
 
         fun defaultDns() = MimicSettings(type = MimicType.DNS)
         fun defaultQuic() = MimicSettings(type = MimicType.QUIC)
         fun defaultSip() = MimicSettings(type = MimicType.SIP)
+
+        fun fromJson(json: String): MimicSettings? {
+            return try {
+                Json.decodeFromString<MimicSettings>(json)
+            } catch (e: Exception) {
+                null
+            }
+        }
 
         val Saver: Saver<MimicSettings, *> = listSaver(
             save = { listOf(

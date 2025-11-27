@@ -300,7 +300,7 @@ data class InterfaceProxy(
         return applyMimicResult(result)
     }
 
-    private fun applyMimicResult(result: MimicResult): InterfaceProxy {
+    fun applyMimicResult(result: MimicResult): InterfaceProxy {
         return copy(
             i1 = result.i1,
             i2 = result.i2,
