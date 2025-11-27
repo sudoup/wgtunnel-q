@@ -23,6 +23,8 @@ import com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.config.components.
 import com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.config.components.PeersSection
 import com.zaneschepke.wireguardautotunnel.ui.sideeffect.LocalSideEffect
 import com.zaneschepke.wireguardautotunnel.ui.state.ConfigProxy
+import com.zaneschepke.wireguardautotunnel.ui.state.MimicSettings
+import com.zaneschepke.wireguardautotunnel.ui.state.MimicType
 import com.zaneschepke.wireguardautotunnel.ui.state.PeerProxy
 import com.zaneschepke.wireguardautotunnel.viewmodel.ConfigViewModel
 import java.util.Locale
@@ -47,6 +49,10 @@ fun ConfigScreen(viewModel: ConfigViewModel) {
 
     val isTunnelNameTaken by
         remember(tunnelName) { derivedStateOf { uiState.unavailableNames.contains(tunnelName) } }
+
+    var mimicDnsSettings by rememberSaveable(stateSaver = MimicSettings.Saver) { mutableStateOf(MimicSettings.defaultDns()) }
+    var mimicQuicSettings by rememberSaveable(stateSaver = MimicSettings.Saver) { mutableStateOf(MimicSettings.defaultQuic()) }
+    var mimicSipSettings by rememberSaveable(stateSaver = MimicSettings.Saver) { mutableStateOf(MimicSettings.defaultSip()) }
 
     sharedViewModel.collectSideEffect { sideEffect ->
         if (sideEffect is LocalSideEffect.SaveChanges)
@@ -87,13 +93,23 @@ fun ConfigScreen(viewModel: ConfigViewModel) {
             onInterfaceChange = { configProxy = configProxy.copy(`interface` = it) },
             onTunnelNameChange = { tunnelName = it },
             onMimicQuic = {
-                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setQuicMimic())
+                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setMimicFromSettings(mimicQuicSettings))
             },
             onMimicDns = {
-                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setDnsMimic())
+                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setMimicFromSettings(mimicDnsSettings))
             },
             onMimicSip = {
-                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setSipMimic())
+                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setMimicFromSettings(mimicSipSettings))
+            },
+            mimicDnsSettings = mimicDnsSettings,
+            mimicQuicSettings = mimicQuicSettings,
+            mimicSipSettings = mimicSipSettings,
+            onMimicSettingsChange = { settings ->
+                when (settings.type) {
+                    MimicType.DNS -> mimicDnsSettings = settings
+                    MimicType.QUIC -> mimicQuicSettings = settings
+                    MimicType.SIP -> mimicSipSettings = settings
+                }
             },
         )
         if (!isGlobalConfig)

@@ -17,11 +17,14 @@ import androidx.compose.ui.unit.dp
 import com.wireguard.crypto.KeyPair
 import com.zaneschepke.wireguardautotunnel.R
 import com.zaneschepke.wireguardautotunnel.ui.LocalIsAndroidTV
+import com.zaneschepke.wireguardautotunnel.ui.common.dialog.MimicConfigDialog
 import com.zaneschepke.wireguardautotunnel.ui.common.label.GroupLabel
 import com.zaneschepke.wireguardautotunnel.ui.common.text.DescriptionText
 import com.zaneschepke.wireguardautotunnel.ui.common.textbox.ConfigurationTextBox
 import com.zaneschepke.wireguardautotunnel.ui.state.ConfigProxy
 import com.zaneschepke.wireguardautotunnel.ui.state.InterfaceProxy
+import com.zaneschepke.wireguardautotunnel.ui.state.MimicSettings
+import com.zaneschepke.wireguardautotunnel.ui.state.MimicType
 import java.util.*
 
 @Composable
@@ -36,6 +39,10 @@ fun InterfaceSection(
     onMimicQuic: () -> Unit,
     onMimicDns: () -> Unit,
     onMimicSip: () -> Unit,
+    mimicDnsSettings: MimicSettings = MimicSettings.defaultDns(),
+    mimicQuicSettings: MimicSettings = MimicSettings.defaultQuic(),
+    mimicSipSettings: MimicSettings = MimicSettings.defaultSip(),
+    onMimicSettingsChange: (MimicSettings) -> Unit = {},
 ) {
     val isTv = LocalIsAndroidTV.current
     var showAmneziaValues by rememberSaveable {
@@ -50,6 +57,8 @@ fun InterfaceSection(
             configProxy.`interface`.isAmneziaCompatibilityModeSet()
         }
 
+    var showMimicDialog by remember { mutableStateOf<MimicType?>(null) }
+
     fun toggleAmneziaCompat() {
         val (show, interfaceProxy) =
             if (configProxy.`interface`.isAmneziaCompatibilityModeSet()) {
@@ -57,6 +66,30 @@ fun InterfaceSection(
             } else Pair(true, configProxy.`interface`.toAmneziaCompatibilityConfig())
         showAmneziaValues = show
         onInterfaceChange(interfaceProxy)
+    }
+
+    showMimicDialog?.let { mimicType ->
+        val currentSettings = when (mimicType) {
+            MimicType.DNS -> mimicDnsSettings
+            MimicType.QUIC -> mimicQuicSettings
+            MimicType.SIP -> mimicSipSettings
+        }
+        MimicConfigDialog(
+            mimicType = mimicType,
+            currentSettings = currentSettings,
+            onDismiss = { showMimicDialog = null },
+            onApply = { settings ->
+                onMimicSettingsChange(settings)
+                showAmneziaValues = true
+                onInterfaceChange(configProxy.`interface`.setMimicFromSettings(settings))
+                showMimicDialog = null
+            },
+            onGenerate = { settings ->
+                onMimicSettingsChange(settings)
+                showAmneziaValues = true
+                onInterfaceChange(configProxy.`interface`.setMimicFromSettings(settings))
+            }
+        )
     }
 
     Surface(color = MaterialTheme.colorScheme.surface) {
@@ -120,6 +153,9 @@ fun InterfaceSection(
                                 showAmneziaValues = true
                                 onMimicSip()
                             },
+                            onMimicQuicSettings = { showMimicDialog = MimicType.QUIC },
+                            onMimicDnsSettings = { showMimicDialog = MimicType.DNS },
+                            onMimicSipSettings = { showMimicDialog = MimicType.SIP },
                         )
                     }
             }
