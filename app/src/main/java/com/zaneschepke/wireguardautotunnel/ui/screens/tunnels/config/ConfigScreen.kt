@@ -10,10 +10,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zaneschepke.wireguardautotunnel.R
+import com.zaneschepke.wireguardautotunnel.data.DataStoreManager
 import com.zaneschepke.wireguardautotunnel.data.entity.TunnelConfig
 import com.zaneschepke.wireguardautotunnel.ui.LocalSharedVm
 import com.zaneschepke.wireguardautotunnel.ui.common.dialog.InfoDialog
@@ -23,16 +27,25 @@ import com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.config.components.
 import com.zaneschepke.wireguardautotunnel.ui.screens.tunnels.config.components.PeersSection
 import com.zaneschepke.wireguardautotunnel.ui.sideeffect.LocalSideEffect
 import com.zaneschepke.wireguardautotunnel.ui.state.ConfigProxy
+import com.zaneschepke.wireguardautotunnel.ui.state.MimicGenerator
 import com.zaneschepke.wireguardautotunnel.ui.state.MimicSettings
 import com.zaneschepke.wireguardautotunnel.ui.state.MimicType
 import com.zaneschepke.wireguardautotunnel.ui.state.PeerProxy
 import com.zaneschepke.wireguardautotunnel.viewmodel.ConfigViewModel
 import java.util.Locale
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.compose.collectSideEffect
+
+private val android.content.Context.mimicDataStore by preferencesDataStore(name = "mimic_settings")
 
 @Composable
 fun ConfigScreen(viewModel: ConfigViewModel) {
     val sharedViewModel = LocalSharedVm.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val uiState by viewModel.container.stateFlow.collectAsStateWithLifecycle()
 
@@ -53,6 +66,46 @@ fun ConfigScreen(viewModel: ConfigViewModel) {
     var mimicDnsSettings by rememberSaveable(stateSaver = MimicSettings.Saver) { mutableStateOf(MimicSettings.defaultDns()) }
     var mimicQuicSettings by rememberSaveable(stateSaver = MimicSettings.Saver) { mutableStateOf(MimicSettings.defaultQuic()) }
     var mimicSipSettings by rememberSaveable(stateSaver = MimicSettings.Saver) { mutableStateOf(MimicSettings.defaultSip()) }
+
+    var activeMimicType by remember { mutableStateOf<MimicType?>(null) }
+
+    LaunchedEffect(Unit) {
+        val dnsJson = context.mimicDataStore.data.map { it[DataStoreManager.mimicDnsSettings] }.first()
+        val quicJson = context.mimicDataStore.data.map { it[DataStoreManager.mimicQuicSettings] }.first()
+        val sipJson = context.mimicDataStore.data.map { it[DataStoreManager.mimicSipSettings] }.first()
+
+        dnsJson?.let { MimicSettings.fromJson(it)?.let { s -> mimicDnsSettings = s } }
+        quicJson?.let { MimicSettings.fromJson(it)?.let { s -> mimicQuicSettings = s } }
+        sipJson?.let { MimicSettings.fromJson(it)?.let { s -> mimicSipSettings = s } }
+    }
+
+    LaunchedEffect(activeMimicType, mimicDnsSettings, mimicQuicSettings, mimicSipSettings) {
+        val type = activeMimicType ?: return@LaunchedEffect
+        val settings = when (type) {
+            MimicType.DNS -> mimicDnsSettings
+            MimicType.QUIC -> mimicQuicSettings
+            MimicType.SIP -> mimicSipSettings
+        }
+        val intervalMs = settings.regenerateIntervalSeconds * 1000L
+        if (intervalMs > 0) {
+            while (true) {
+                delay(intervalMs)
+                val newResult = MimicGenerator.generate(settings)
+                configProxy = configProxy.copy(`interface` = configProxy.`interface`.applyMimicResult(newResult))
+            }
+        }
+    }
+
+    fun saveMimicSettings(settings: MimicSettings) {
+        scope.launch {
+            val key = when (settings.type) {
+                MimicType.DNS -> DataStoreManager.mimicDnsSettings
+                MimicType.QUIC -> DataStoreManager.mimicQuicSettings
+                MimicType.SIP -> DataStoreManager.mimicSipSettings
+            }
+            context.mimicDataStore.edit { it[key] = settings.toJson() }
+        }
+    }
 
     sharedViewModel.collectSideEffect { sideEffect ->
         if (sideEffect is LocalSideEffect.SaveChanges)
@@ -93,12 +146,15 @@ fun ConfigScreen(viewModel: ConfigViewModel) {
             onInterfaceChange = { configProxy = configProxy.copy(`interface` = it) },
             onTunnelNameChange = { tunnelName = it },
             onMimicQuic = {
+                activeMimicType = MimicType.QUIC
                 configProxy = configProxy.copy(`interface` = configProxy.`interface`.setMimicFromSettings(mimicQuicSettings))
             },
             onMimicDns = {
+                activeMimicType = MimicType.DNS
                 configProxy = configProxy.copy(`interface` = configProxy.`interface`.setMimicFromSettings(mimicDnsSettings))
             },
             onMimicSip = {
+                activeMimicType = MimicType.SIP
                 configProxy = configProxy.copy(`interface` = configProxy.`interface`.setMimicFromSettings(mimicSipSettings))
             },
             mimicDnsSettings = mimicDnsSettings,
@@ -110,6 +166,8 @@ fun ConfigScreen(viewModel: ConfigViewModel) {
                     MimicType.QUIC -> mimicQuicSettings = settings
                     MimicType.SIP -> mimicSipSettings = settings
                 }
+                activeMimicType = settings.type
+                saveMimicSettings(settings)
             },
         )
         if (!isGlobalConfig)

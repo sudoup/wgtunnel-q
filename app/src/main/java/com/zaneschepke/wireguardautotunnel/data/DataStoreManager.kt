@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.zaneschepke.wireguardautotunnel.di.IoDispatcher
 import java.io.IOException
@@ -27,6 +28,9 @@ class DataStoreManager(
         val locationDisclosureShown = booleanPreferencesKey("LOCATION_DISCLOSURE_SHOWN")
         val batteryDisableShown = booleanPreferencesKey("BATTERY_OPTIMIZE_DISABLE_SHOWN")
         val shouldShowDonationSnackbar = booleanPreferencesKey("SHOW_DONATION_SNACK")
+        val mimicDnsSettings = stringPreferencesKey("MIMIC_DNS_SETTINGS")
+        val mimicQuicSettings = stringPreferencesKey("MIMIC_QUIC_SETTINGS")
+        val mimicSipSettings = stringPreferencesKey("MIMIC_SIP_SETTINGS")
     }
 
     suspend fun init() {

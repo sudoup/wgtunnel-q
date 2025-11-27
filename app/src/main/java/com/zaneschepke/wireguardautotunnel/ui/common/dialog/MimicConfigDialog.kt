@@ -60,7 +60,7 @@ fun MimicConfigDialog(
             regenerateIntervalSeconds = regenerateInterval.toIntOrNull()?.coerceIn(
                 MimicSettings.REGENERATE_MIN,
                 MimicSettings.REGENERATE_MAX
-            ) ?: 0
+            ) ?: MimicSettings.DEFAULT_REGENERATE_INTERVAL
         )
     }
 
@@ -189,7 +189,7 @@ fun MimicConfigDialog(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    supportingText = { Text(stringResource(R.string.mimic_regenerate_hint)) }
+                    supportingText = { Text("${MimicSettings.REGENERATE_MIN}-${MimicSettings.REGENERATE_MAX} sec") }
                 )
             }
         },

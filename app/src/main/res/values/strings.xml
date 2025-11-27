@@ -449,7 +449,7 @@
     <string name="mimic_itime_min">Itime Min</string>
     <string name="mimic_itime_max">Itime Max</string>
     <string name="mimic_regenerate_interval">Regenerate Interval (seconds)</string>
-    <string name="mimic_regenerate_hint">0 = disabled, values generate new packets periodically</string>
+    <string name="mimic_regenerate_hint">Auto-regenerates mimic packets at specified interval</string>
     <string name="mimic_generate">Generate</string>
     <string name="mimic_apply">Apply</string>
 </resources>
