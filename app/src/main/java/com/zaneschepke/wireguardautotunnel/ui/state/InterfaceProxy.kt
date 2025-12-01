@@ -295,9 +295,11 @@ data class InterfaceProxy(
         return applyMimicResult(result)
     }
 
-    fun setMimicFromSettings(settings: MimicSettings): InterfaceProxy {
-        val result = MimicGenerator.generate(settings)
-        return applyMimicResult(result)
+    fun setMimicFromSettings(settings: MimicSettings): Result<InterfaceProxy> {
+        return runCatching {
+            val result = MimicGenerator.generate(settings)
+            applyMimicResult(result)
+        }
     }
 
     fun applyMimicResult(result: MimicResult): InterfaceProxy {

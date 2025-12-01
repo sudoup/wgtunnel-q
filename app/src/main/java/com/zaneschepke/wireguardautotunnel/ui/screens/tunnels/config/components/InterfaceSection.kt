@@ -23,6 +23,7 @@ import com.zaneschepke.wireguardautotunnel.ui.common.text.DescriptionText
 import com.zaneschepke.wireguardautotunnel.ui.common.textbox.ConfigurationTextBox
 import com.zaneschepke.wireguardautotunnel.ui.state.ConfigProxy
 import com.zaneschepke.wireguardautotunnel.ui.state.InterfaceProxy
+import com.zaneschepke.wireguardautotunnel.ui.state.MimicDomainRequiredException
 import com.zaneschepke.wireguardautotunnel.ui.state.MimicSettings
 import com.zaneschepke.wireguardautotunnel.ui.state.MimicType
 import java.util.*
@@ -68,6 +69,25 @@ fun InterfaceSection(
         onInterfaceChange(interfaceProxy)
     }
 
+    var mimicError by remember { mutableStateOf<Int?>(null) }
+
+    fun applyMimicSettings(settings: MimicSettings, closeDialog: Boolean = false) {
+        configProxy.`interface`.setMimicFromSettings(settings)
+            .onSuccess { newInterface ->
+                onMimicSettingsChange(settings)
+                showAmneziaValues = true
+                onInterfaceChange(newInterface)
+                mimicError = null
+                if (closeDialog) showMimicDialog = null
+            }
+            .onFailure { e ->
+                mimicError = when (e) {
+                    is MimicDomainRequiredException -> R.string.mimic_domain_required
+                    else -> null
+                }
+            }
+    }
+
     showMimicDialog?.let { mimicType ->
         val currentSettings = when (mimicType) {
             MimicType.DNS -> mimicDnsSettings
@@ -77,18 +97,13 @@ fun InterfaceSection(
         MimicConfigDialog(
             mimicType = mimicType,
             currentSettings = currentSettings,
-            onDismiss = { showMimicDialog = null },
-            onApply = { settings ->
-                onMimicSettingsChange(settings)
-                showAmneziaValues = true
-                onInterfaceChange(configProxy.`interface`.setMimicFromSettings(settings))
+            onDismiss = { 
                 showMimicDialog = null
+                mimicError = null
             },
-            onGenerate = { settings ->
-                onMimicSettingsChange(settings)
-                showAmneziaValues = true
-                onInterfaceChange(configProxy.`interface`.setMimicFromSettings(settings))
-            }
+            onApply = { settings -> applyMimicSettings(settings, closeDialog = true) },
+            onGenerate = { settings -> applyMimicSettings(settings, closeDialog = false) },
+            errorMessage = mimicError?.let { stringResource(it) },
         )
     }
 

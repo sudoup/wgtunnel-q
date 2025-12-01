@@ -452,4 +452,5 @@
     <string name="mimic_regenerate_hint">Auto-regenerates mimic packets at specified interval</string>
     <string name="mimic_generate">Generate</string>
     <string name="mimic_apply">Apply</string>
+    <string name="mimic_domain_required">Domain is required for DNS mimic</string>
 </resources>

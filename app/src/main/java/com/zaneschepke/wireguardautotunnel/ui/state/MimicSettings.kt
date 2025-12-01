@@ -79,21 +79,44 @@ data class MimicSettings(
     }
 }
 
+class MimicDomainRequiredException : IllegalArgumentException("Domain is required for DNS mimic")
+
 object MimicGenerator {
 
+    private const val DNS_TYPE_A = "0001"
+    private const val DNS_TYPE_AAAA = "001c"
+    private const val DNS_TYPE_HTTPS = "0041"
+
     fun generateDnsMimic(settings: MimicSettings): MimicResult {
-        val transactionId = Random.nextInt(0x0001, 0xFFFF)
-        val dnsQuery = buildDnsQuery(settings.domain, transactionId)
+        if (settings.domain.isBlank()) {
+            throw MimicDomainRequiredException()
+        }
+
+        val transactionId1 = Random.nextInt(0x0001, 0xFFFF)
+        val transactionId2 = Random.nextInt(0x0001, 0xFFFF)
+        val transactionId3 = Random.nextInt(0x0001, 0xFFFF)
+        val domain = settings.domain
+
+        val dnsQueryA = buildDnsQueryWithEdns(domain, transactionId1, DNS_TYPE_A)
+        val dnsQueryAAAA = buildDnsQueryWithEdns(domain, transactionId2, DNS_TYPE_AAAA)
+        val dnsResponse = buildDnsResponse(domain, transactionId1)
+
+        val extraQuery = if (Random.nextBoolean()) {
+            buildDnsQueryWithEdns(domain, transactionId3, DNS_TYPE_HTTPS)
+        } else {
+            buildDnsQueryWithEdns("www.$domain", transactionId3, DNS_TYPE_A)
+        }
+
         val itime = Random.nextInt(settings.itimeMin, settings.itimeMax + 1)
 
         return MimicResult(
-            i1 = "<b 0x${dnsQuery}>",
-            i2 = "",
-            i3 = "",
-            i4 = "",
-            i5 = "",
-            j1 = "",
-            j2 = "",
+            i1 = "<b 0x${dnsQueryA}>",
+            i2 = "<b 0x${dnsQueryAAAA}>",
+            i3 = "<b 0x${dnsResponse}>",
+            i4 = "<b 0x${extraQuery}>",
+            i5 = "<b 0x${buildDnsResponse(domain, transactionId2)}>",
+            j1 = "<b 0x${generateRandomHex(Random.nextInt(8, 24))}>",
+            j2 = "<b 0x${generateRandomHex(Random.nextInt(4, 16))}>",
             j3 = "",
             itime = itime.toString()
         )
@@ -172,10 +195,105 @@ object MimicGenerator {
         }
     }
 
-    private fun buildDnsQuery(domain: String, transactionId: Int): String {
+    private fun buildDnsQueryWithEdns(domain: String, transactionId: Int, queryType: String): String {
         val sb = StringBuilder()
+
         sb.append(String.format("%04x", transactionId))
-        sb.append("01000001000000000000")
+        val flags = listOf("0100", "0120", "0100", "0110").random()
+        sb.append(flags)
+        sb.append("0001")
+        sb.append("0000")
+        sb.append("0000")
+        sb.append("0001")
+
+        encodeDomainName(sb, domain)
+        sb.append(queryType)
+        sb.append("0001")
+
+        sb.append("00")
+        sb.append("0029")
+        sb.append("1000")
+        sb.append("0000")
+        sb.append("8000")
+
+        val ednsOptions = mutableListOf<String>()
+
+        val clientCookie = generateRandomHex(8)
+        val cookieOption = "000a0008$clientCookie"
+        ednsOptions.add(cookieOption)
+
+        if (Random.nextBoolean()) {
+            val paddingLen = Random.nextInt(12, 64)
+            val paddingOption = "000c${String.format("%04x", paddingLen)}${"00".repeat(paddingLen)}"
+            ednsOptions.add(paddingOption)
+        }
+
+        if (Random.nextBoolean()) {
+            val subnetOption = "0008000701${generateRandomHex(3)}00"
+            ednsOptions.add(subnetOption)
+        }
+
+        ednsOptions.shuffle()
+        val rdataContent = ednsOptions.joinToString("")
+        sb.append(String.format("%04x", rdataContent.length / 2))
+        sb.append(rdataContent)
+
+        return sb.toString()
+    }
+
+    private fun buildDnsResponse(domain: String, transactionId: Int): String {
+        val sb = StringBuilder()
+
+        sb.append(String.format("%04x", transactionId))
+        val responseFlags = listOf("8180", "8580", "8180").random()
+        sb.append(responseFlags)
+        sb.append("0001")
+        val answerCount = Random.nextInt(1, 4)
+        sb.append(String.format("%04x", answerCount))
+        sb.append("0000")
+        sb.append("0001")
+
+        encodeDomainName(sb, domain)
+        sb.append(DNS_TYPE_A)
+        sb.append("0001")
+
+        for (i in 0 until answerCount) {
+            sb.append("c00c")
+            sb.append(DNS_TYPE_A)
+            sb.append("0001")
+            sb.append(String.format("%08x", Random.nextInt(60, 7200)))
+            sb.append("0004")
+            sb.append(String.format("%02x", Random.nextInt(1, 255)))
+            sb.append(String.format("%02x", Random.nextInt(0, 255)))
+            sb.append(String.format("%02x", Random.nextInt(0, 255)))
+            sb.append(String.format("%02x", Random.nextInt(1, 255)))
+        }
+
+        sb.append("00")
+        sb.append("0029")
+        sb.append("1000")
+        sb.append("0000")
+        sb.append("8000")
+
+        val responseEdns = mutableListOf<String>()
+        val serverCookie = generateRandomHex(8) + generateRandomHex(Random.nextInt(8, 16))
+        val cookieOption = "000a${String.format("%04x", serverCookie.length / 2)}$serverCookie"
+        responseEdns.add(cookieOption)
+
+        if (Random.nextBoolean()) {
+            val paddingLen = Random.nextInt(8, 32)
+            val paddingOption = "000c${String.format("%04x", paddingLen)}${"00".repeat(paddingLen)}"
+            responseEdns.add(paddingOption)
+        }
+
+        val rdataContent = responseEdns.joinToString("")
+        sb.append(String.format("%04x", rdataContent.length / 2))
+        sb.append(rdataContent)
+
+        return sb.toString()
+    }
+
+    private fun encodeDomainName(sb: StringBuilder, domain: String) {
         val parts = domain.split(".")
         for (part in parts) {
             sb.append(String.format("%02x", part.length))
@@ -184,9 +302,6 @@ object MimicGenerator {
             }
         }
         sb.append("00")
-        sb.append("0001")
-        sb.append("0001")
-        return sb.toString()
     }
 
     private fun buildQuicInitialPacket(connectionId: String, packetNumber: Int, version: String): String {

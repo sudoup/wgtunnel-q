@@ -90,8 +90,9 @@ fun ConfigScreen(viewModel: ConfigViewModel) {
         if (intervalMs > 0) {
             while (true) {
                 delay(intervalMs)
-                val newResult = MimicGenerator.generate(settings)
-                configProxy = configProxy.copy(`interface` = configProxy.`interface`.applyMimicResult(newResult))
+                runCatching { MimicGenerator.generate(settings) }.onSuccess { newResult ->
+                    configProxy = configProxy.copy(`interface` = configProxy.`interface`.applyMimicResult(newResult))
+                }
             }
         }
     }
@@ -146,16 +147,22 @@ fun ConfigScreen(viewModel: ConfigViewModel) {
             onInterfaceChange = { configProxy = configProxy.copy(`interface` = it) },
             onTunnelNameChange = { tunnelName = it },
             onMimicQuic = {
-                activeMimicType = MimicType.QUIC
-                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setMimicFromSettings(mimicQuicSettings))
+                configProxy.`interface`.setMimicFromSettings(mimicQuicSettings).onSuccess {
+                    activeMimicType = MimicType.QUIC
+                    configProxy = configProxy.copy(`interface` = it)
+                }
             },
             onMimicDns = {
-                activeMimicType = MimicType.DNS
-                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setMimicFromSettings(mimicDnsSettings))
+                configProxy.`interface`.setMimicFromSettings(mimicDnsSettings).onSuccess {
+                    activeMimicType = MimicType.DNS
+                    configProxy = configProxy.copy(`interface` = it)
+                }
             },
             onMimicSip = {
-                activeMimicType = MimicType.SIP
-                configProxy = configProxy.copy(`interface` = configProxy.`interface`.setMimicFromSettings(mimicSipSettings))
+                configProxy.`interface`.setMimicFromSettings(mimicSipSettings).onSuccess {
+                    activeMimicType = MimicType.SIP
+                    configProxy = configProxy.copy(`interface` = it)
+                }
             },
             mimicDnsSettings = mimicDnsSettings,
             mimicQuicSettings = mimicQuicSettings,

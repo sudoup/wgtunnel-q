@@ -23,6 +23,7 @@ fun MimicConfigDialog(
     onDismiss: () -> Unit,
     onApply: (MimicSettings) -> Unit,
     onGenerate: (MimicSettings) -> Unit,
+    errorMessage: String? = null,
 ) {
     var domain by remember { mutableStateOf(currentSettings.domain) }
     var sipFromUser by remember { mutableStateOf(currentSettings.sipFromUser) }
@@ -191,6 +192,15 @@ fun MimicConfigDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     supportingText = { Text("${MimicSettings.REGENERATE_MIN}-${MimicSettings.REGENERATE_MAX} sec") }
                 )
+
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
         },
         confirmButton = {
