@@ -162,6 +162,7 @@ object MimicGenerator {
         val callId = generateRandomHex(16)
         val branch = "z9hG4bK${generateRandomHex(8)}"
 <<<<<<< HEAD
+<<<<<<< HEAD
         val fromTag = random.nextInt(100000000, 999999999).toString()
         val toTag = random.nextInt(100000000, 999999999).toString()
         val cseq = random.nextInt(1, 999999)
@@ -173,6 +174,8 @@ object MimicGenerator {
         val rtpPort = (random.nextInt(8000, 30000) / 2) * 2
         val sessionId = random.nextLong(1000000000L, 9999999999L).toString()
 =======
+=======
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
         val fromTag = Random.nextInt(100000000, 999999999).toString()
         val toTag = Random.nextInt(100000000, 999999999).toString()
         val cseq = Random.nextInt(1, 999999)
@@ -183,6 +186,9 @@ object MimicGenerator {
         val serverPort = listOf(5060, 5060, 5060, 5061).random()
         val rtpPort = (Random.nextInt(8000, 30000) / 2) * 2
         val sessionId = Random.nextLong(1000000000L, 9999999999L).toString()
+<<<<<<< HEAD
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
+=======
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
 
         val sipInvite = buildSipInvite(
@@ -212,6 +218,7 @@ object MimicGenerator {
             cseq = cseq,
             clientIp = clientIp,
             clientPort = clientPort
+<<<<<<< HEAD
 <<<<<<< HEAD
         )
 
@@ -299,6 +306,8 @@ object MimicGenerator {
 
         val itime = random.nextInt(settings.itimeMin, settings.itimeMax + 1)
 =======
+=======
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
         )
 
         val sipRinging = buildSipRinging(
@@ -686,15 +695,21 @@ object MimicGenerator {
 
     private fun generateRandomPrivateIp(): String {
 <<<<<<< HEAD
+<<<<<<< HEAD
         return when (random.nextInt(3)) {
             0 -> "192.168.${random.nextInt(0, 256)}.${random.nextInt(1, 255)}"
             1 -> "10.${random.nextInt(0, 256)}.${random.nextInt(0, 256)}.${random.nextInt(1, 255)}"
             else -> "172.${random.nextInt(16, 32)}.${random.nextInt(0, 256)}.${random.nextInt(1, 255)}"
 =======
+=======
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
         return when (Random.nextInt(3)) {
             0 -> "192.168.${Random.nextInt(0, 256)}.${Random.nextInt(1, 255)}"
             1 -> "10.${Random.nextInt(0, 256)}.${Random.nextInt(0, 256)}.${Random.nextInt(1, 255)}"
             else -> "172.${Random.nextInt(16, 32)}.${Random.nextInt(0, 256)}.${Random.nextInt(1, 255)}"
+<<<<<<< HEAD
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
+=======
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
         }
     }
@@ -707,6 +722,7 @@ object MimicGenerator {
         sessionId: String
     ): String {
 <<<<<<< HEAD
+<<<<<<< HEAD
         val codecs = SDP_CODECS.secureShuffled().take(random.nextInt(2, 6))
         val codecIds = codecs.joinToString(" ") { it.first }
         val rtpmaps = codecs.joinToString("") { "a=rtpmap:${it.first} ${it.second}\r\n" }
@@ -714,12 +730,17 @@ object MimicGenerator {
         val sessionVersion = random.nextLong(1L, 9999999999L).toString()
         val originHost = if (random.nextBoolean()) ip else domain
 =======
+=======
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
         val codecs = SDP_CODECS.shuffled().take(Random.nextInt(2, 6))
         val codecIds = codecs.joinToString(" ") { it.first }
         val rtpmaps = codecs.joinToString("") { "a=rtpmap:${it.first} ${it.second}\r\n" }
         val sessionName = SDP_SESSION_NAMES.random()
         val sessionVersion = Random.nextLong(1L, 9999999999L).toString()
         val originHost = if (Random.nextBoolean()) ip else domain
+<<<<<<< HEAD
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
+=======
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
 
         return buildString {
@@ -730,6 +751,7 @@ object MimicGenerator {
             append("t=0 0\r\n")
             append("m=audio $rtpPort RTP/AVP $codecIds\r\n")
             append(rtpmaps)
+<<<<<<< HEAD
 <<<<<<< HEAD
             if (random.nextBoolean()) {
                 append("a=fmtp:101 0-16\r\n")
@@ -743,6 +765,8 @@ object MimicGenerator {
             }
             if (random.nextInt(4) == 0) {
 =======
+=======
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
             if (Random.nextBoolean()) {
                 append("a=fmtp:101 0-16\r\n")
             }
@@ -754,6 +778,9 @@ object MimicGenerator {
                 append("a=maxptime:150\r\n")
             }
             if (Random.nextInt(4) == 0) {
+<<<<<<< HEAD
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
+=======
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
                 append("a=rtcp:${rtpPort + 1}\r\n")
             }
@@ -797,7 +824,11 @@ object MimicGenerator {
         headers.add("INVITE sip:$toUser@$toDomain SIP/2.0")
         headers.add("Via: SIP/2.0/UDP $clientIp:$clientPort;branch=$branch;rport")
 <<<<<<< HEAD
+<<<<<<< HEAD
         headers.add("Max-Forwards: ${random.nextInt(68, 71)}")
+=======
+        headers.add("Max-Forwards: ${Random.nextInt(68, 71)}")
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
 =======
         headers.add("Max-Forwards: ${Random.nextInt(68, 71)}")
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
@@ -808,6 +839,7 @@ object MimicGenerator {
         headers.add("Contact: <sip:$fromUser@$clientIp:$clientPort>")
         headers.add("User-Agent: $userAgent")
 <<<<<<< HEAD
+<<<<<<< HEAD
         headers.add("Allow: ${SIP_ALLOW_METHODS.secureRandom()}")
         headers.add("Supported: ${SIP_SUPPORTED.secureRandom()}")
         if (random.nextInt(3) == 0) {
@@ -815,12 +847,17 @@ object MimicGenerator {
         }
         if (random.nextInt(4) == 0) {
 =======
+=======
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
         headers.add("Allow: ${SIP_ALLOW_METHODS.random()}")
         headers.add("Supported: ${SIP_SUPPORTED.random()}")
         if (Random.nextInt(3) == 0) {
             headers.add("Session-Expires: ${Random.nextInt(1800, 3600)};refresher=uac")
         }
         if (Random.nextInt(4) == 0) {
+<<<<<<< HEAD
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
+=======
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
             headers.add("Min-SE: 90")
         }
@@ -876,7 +913,11 @@ object MimicGenerator {
         headers.add("CSeq: $cseq INVITE")
         headers.add("Contact: <sip:$toUser@$toDomain>")
 <<<<<<< HEAD
+<<<<<<< HEAD
         if (random.nextInt(4) == 0) {
+=======
+        if (Random.nextInt(4) == 0) {
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
 =======
         if (Random.nextInt(4) == 0) {
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
@@ -916,6 +957,7 @@ object MimicGenerator {
         headers.add("Contact: <sip:$toUser@$serverIp:$serverPort>")
         headers.add("User-Agent: $userAgent")
 <<<<<<< HEAD
+<<<<<<< HEAD
         headers.add("Allow: ${SIP_ALLOW_METHODS.secureRandom()}")
         headers.add("Supported: ${SIP_SUPPORTED.secureRandom()}")
         if (random.nextInt(3) == 0) {
@@ -923,12 +965,17 @@ object MimicGenerator {
         }
         if (random.nextInt(5) == 0) {
 =======
+=======
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
         headers.add("Allow: ${SIP_ALLOW_METHODS.random()}")
         headers.add("Supported: ${SIP_SUPPORTED.random()}")
         if (Random.nextInt(3) == 0) {
             headers.add("Session-Expires: ${Random.nextInt(1800, 3600)};refresher=uas")
         }
         if (Random.nextInt(5) == 0) {
+<<<<<<< HEAD
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
+=======
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
             headers.add("Server: $userAgent")
         }
@@ -955,7 +1002,11 @@ object MimicGenerator {
         headers.add("ACK sip:$toUser@$toDomain SIP/2.0")
         headers.add("Via: SIP/2.0/UDP $clientIp;branch=$branch;rport")
 <<<<<<< HEAD
+<<<<<<< HEAD
         headers.add("Max-Forwards: ${random.nextInt(68, 71)}")
+=======
+        headers.add("Max-Forwards: ${Random.nextInt(68, 71)}")
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
 =======
         headers.add("Max-Forwards: ${Random.nextInt(68, 71)}")
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
@@ -986,7 +1037,11 @@ object MimicGenerator {
         headers.add("BYE sip:$toUser@$toDomain SIP/2.0")
         headers.add("Via: SIP/2.0/UDP $clientIp;branch=$branch;rport")
 <<<<<<< HEAD
+<<<<<<< HEAD
         headers.add("Max-Forwards: ${random.nextInt(68, 71)}")
+=======
+        headers.add("Max-Forwards: ${Random.nextInt(68, 71)}")
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
 =======
         headers.add("Max-Forwards: ${Random.nextInt(68, 71)}")
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
@@ -996,7 +1051,11 @@ object MimicGenerator {
         headers.add("CSeq: $cseq BYE")
         headers.add("User-Agent: $userAgent")
 <<<<<<< HEAD
+<<<<<<< HEAD
         if (random.nextInt(3) == 0) {
+=======
+        if (Random.nextInt(3) == 0) {
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
 =======
         if (Random.nextInt(3) == 0) {
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
@@ -1042,9 +1101,15 @@ object MimicGenerator {
     ): String {
         val branch = "z9hG4bK${generateRandomHex(8)}"
 <<<<<<< HEAD
+<<<<<<< HEAD
         val tag = random.nextInt(100000000, 999999999).toString()
         val callId = generateRandomHex(16)
         val cseq = random.nextInt(1, 999999)
+=======
+        val tag = Random.nextInt(100000000, 999999999).toString()
+        val callId = generateRandomHex(16)
+        val cseq = Random.nextInt(1, 999999)
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
 =======
         val tag = Random.nextInt(100000000, 999999999).toString()
         val callId = generateRandomHex(16)
@@ -1055,7 +1120,11 @@ object MimicGenerator {
         headers.add("OPTIONS sip:$toDomain SIP/2.0")
         headers.add("Via: SIP/2.0/UDP $clientIp:$clientPort;branch=$branch;rport")
 <<<<<<< HEAD
+<<<<<<< HEAD
         headers.add("Max-Forwards: ${random.nextInt(68, 71)}")
+=======
+        headers.add("Max-Forwards: ${Random.nextInt(68, 71)}")
+>>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
 =======
         headers.add("Max-Forwards: ${Random.nextInt(68, 71)}")
 >>>>>>> e7670f2817fc4e06e914b6d572cec218d6e90ce1
